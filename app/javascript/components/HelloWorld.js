@@ -4,34 +4,49 @@ import { createStructuredSelctor, createStructuredSelector } from 'reselect';
 import { connect } from 'react-redux';
 
 const GET_THINGS_REQUEST = 'GET_THINGS_REQUEST';
+const GET_THINGS_SUCCESS = 'GET_THINGS_SUCCESS';
 
 function getThings() {
-  console.log('getThings() Action!!')
-  return {
-    type: GET_THINGS_REQUEST,
+  console.log('getThings() Action!!');
+  return (dispatch) => {
+    dispatch({ type: GET_THINGS_REQUEST });
+    return fetch(`v1/things.json`)
+      .then((response) => response.json())
+      .then((json) => dispatch(getThingsSuccess(json)))
+      .catch((error) => console.log(error));
   };
-};
+}
+
+export function getThingsSuccess(json) {
+  return {
+    type: GET_THINGS_SUCCESS,
+    json,
+  };
+}
 
 class HelloWorld extends React.Component {
   render() {
     const { things } = this.props;
     const thingsList = things.map((thing, index) => {
-      return <li key={index}>{thing.name} {thing.guid}</li>
-    })
+      return (
+        <li key={index}>
+          {thing.name} {thing.guid}
+        </li>
+      );
+    });
     return (
-    <React.Fragment>
-      Greeting: {this.props.greeting}
-      <button onClick={() => this.props.getThings()}>getThings</button>
-      <br />
-      <ul>{thingsList}</ul>
-      <h1>Hello</h1>
-    </React.Fragment>
+      <React.Fragment>
+        Greeting: {this.props.greeting}
+        <button onClick={() => this.props.getThings()}>getThings</button>
+        <br />
+        <ul>{thingsList}</ul>
+      </React.Fragment>
     );
   }
 }
 
 const structuredSelctor = createStructuredSelector({
-  things: state => state.things
+  things: (state) => state.things,
 });
 
 const mapDispatchToProps = { getThings };
